@@ -21,7 +21,7 @@ func main() {
 	}
 
 	defer func(driver *webdriver.Driver) {
-		if err := driver.Close(); err != nil {
+		if err := driver.Stop(); err != nil {
 			log.Println("failed to close web driver:", err)
 		}
 	}(driver)

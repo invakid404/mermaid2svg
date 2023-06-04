@@ -169,7 +169,7 @@ func (driver *Driver) Render(input string) (string, error) {
 	}
 }
 
-func (driver *Driver) Close() error {
+func (driver *Driver) Stop() error {
 	close(driver.renderTasks)
 
 	if driver.webDriver != nil {
