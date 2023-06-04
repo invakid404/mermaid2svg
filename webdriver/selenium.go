@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"sync/atomic"
 	"time"
 )
@@ -20,15 +21,19 @@ const (
 var (
 	//go:embed index.html
 	mermaidHTML []byte
+
+	//go:embed geckodriver.sh
+	geckodriverEntrypoint []byte
 )
 
 type Driver struct {
-	service     *selenium.Service
-	webDriver   selenium.WebDriver
-	server      *http.Server
-	serverPort  int
-	renderTasks chan renderTask
-	init        atomic.Bool
+	service           *selenium.Service
+	serviceEntrypoint string
+	webDriver         selenium.WebDriver
+	server            *http.Server
+	serverPort        int
+	renderTasks       chan renderTask
+	init              atomic.Bool
 }
 
 func New() (*Driver, error) {
@@ -68,7 +73,25 @@ func (driver *Driver) Start() error {
 		_ = driver.server.Serve(listener)
 	}()
 
-	service, err := selenium.NewGeckoDriverService("geckodriver", geckodriverPort)
+	entrypoint, err := os.CreateTemp("", "geckodriver")
+	if err != nil {
+		return fmt.Errorf("failed to create geckodriver entrypoint: %w", err)
+	}
+	driver.serviceEntrypoint = entrypoint.Name()
+
+	if err = entrypoint.Chmod(0700); err != nil {
+		return fmt.Errorf("failed to make geckodriver entrypoint executable: %w", err)
+	}
+
+	if _, err = entrypoint.Write(geckodriverEntrypoint); err != nil {
+		return fmt.Errorf("failed to write geckodriver entrypoint: %w", err)
+	}
+
+	if err = entrypoint.Close(); err != nil {
+		return fmt.Errorf("failed to close geckodriver entrypoint: %w", err)
+	}
+
+	service, err := selenium.NewGeckoDriverService(driver.serviceEntrypoint, geckodriverPort)
 	if err != nil {
 		return fmt.Errorf("failed to start geckodriver: %w", err)
 	}
@@ -172,11 +195,11 @@ func (driver *Driver) Render(input string) (string, error) {
 func (driver *Driver) Stop() error {
 	close(driver.renderTasks)
 
-	if driver.webDriver != nil {
-		time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 2)
 
-		if err := driver.webDriver.Close(); err != nil {
-			return fmt.Errorf("failed to stop webdriver web driver: %w", err)
+	if driver.webDriver != nil {
+		if err := driver.webDriver.Quit(); err != nil {
+			return fmt.Errorf("failed to quit webdriver web driver: %w", err)
 		}
 	}
 
@@ -189,6 +212,12 @@ func (driver *Driver) Stop() error {
 	if driver.server != nil {
 		if err := driver.server.Close(); err != nil {
 			return fmt.Errorf("failed to close http server: %w", err)
+		}
+	}
+
+	if driver.serviceEntrypoint != "" {
+		if err := os.Remove(driver.serviceEntrypoint); err != nil {
+			return fmt.Errorf("failed to remove service entrypoint: %w", err)
 		}
 	}
 
