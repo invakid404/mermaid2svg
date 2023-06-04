@@ -2,16 +2,12 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
+	"github.com/invakid404/mermaid2svg/api"
 	"github.com/invakid404/mermaid2svg/webdriver"
 	"log"
-	"sync"
-)
-
-const (
-	example = `pie title NETFLIX
-         "Time spent looking for movie" : 90
-         "Time spent watching it" : 10`
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -30,22 +26,22 @@ func main() {
 		log.Fatalln("failed to start driver:", err)
 	}
 
-	wg := sync.WaitGroup{}
-	wg.Add(3)
+	app := api.New(api.Options{
+		Driver: driver,
+	})
 
-	for i := 0; i < 3; i++ {
-		i := i
-		go func() {
-			defer wg.Done()
+	defer func(app *api.API) {
+		err := app.Stop()
+		if err != nil {
+			log.Println("failed to close api:", err)
+		}
+	}(app)
 
-			svg, err := driver.Render(example)
-			if err != nil {
-				log.Println("failed to render:", err)
-			}
-
-			fmt.Println(i, svg)
-		}()
+	if err = app.Start(); err != nil {
+		log.Fatalln("failed to start app:", err)
 	}
 
-	wg.Wait()
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	<-sc
 }
