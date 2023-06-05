@@ -26,6 +26,9 @@ var (
 	//go:embed index.html
 	mermaidHTML []byte
 
+	//go:embed render.js
+	renderJS string
+
 	//go:embed geckodriver.sh
 	geckodriverEntrypoint []byte
 )
@@ -157,25 +160,7 @@ func (driver *Driver) renderOne(task renderTask) {
 	}
 
 	result, err := driver.webDriver.ExecuteScriptAsync(
-		// language=javascript
-		`
-			const [source, options, callback] = arguments;
-			mermaid.initialize(options);
-
-			(async () => {
-			  const { svg } = await mermaid.render("container", source);
-			  document.documentElement.innerHTML = svg;
-
-			  const container = document.querySelector("#container");
-			  const bbox = container.getBBox();
-			  container.setAttribute(
-				"viewBox",
-				[bbox.x, bbox.y, bbox.width, bbox.height].join(" ")
-			  );
-
-			  callback(container.outerHTML);
-			})();
-		`,
+		renderJS,
 		[]any{task.input, task.options},
 	)
 
