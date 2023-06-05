@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/invakid404/mermaid2svg/util/httputil"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/firefox"
 	"log"
@@ -25,6 +28,19 @@ var (
 
 	//go:embed geckodriver.sh
 	geckodriverEntrypoint []byte
+)
+
+var (
+	enqueuedTasks = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "webdriver_enqueued_tasks",
+		Help: "The amount of enqueued render tasks",
+	})
+
+	renderDurationSeconds = promauto.NewHistogram(prometheus.HistogramOpts{
+		Name:    "webdriver_render_duration_seconds",
+		Help:    "The processing duration of render tasks",
+		Buckets: []float64{0.1, 1, 5, 10, 30, 60},
+	})
 )
 
 type Driver struct {
@@ -119,7 +135,13 @@ func (driver *Driver) Start() error {
 
 func (driver *Driver) renderThread() {
 	for task := range driver.renderTasks {
+		start := time.Now()
 		driver.renderOne(task)
+
+		duration := time.Since(start)
+
+		renderDurationSeconds.Observe(duration.Seconds())
+		enqueuedTasks.Dec()
 	}
 }
 
@@ -175,6 +197,8 @@ type renderTask struct {
 func (driver *Driver) enqueueRender(input string, options map[string]any) (<-chan string, <-chan error) {
 	outputChan := make(chan string, 1)
 	errChan := make(chan error, 1)
+
+	enqueuedTasks.Inc()
 
 	driver.renderTasks <- renderTask{
 		input:   input,
