@@ -7,6 +7,7 @@ window.mermaid.initialize(options);
 
   const container = document.querySelector("#container");
 
+  container.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
   container.removeAttribute("style");
 
   const bbox = container.getBBox({
