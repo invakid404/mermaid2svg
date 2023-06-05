@@ -70,7 +70,10 @@ func (driver *Driver) Start() error {
 	driver.serverPort = listener.Addr().(*net.TCPAddr).Port
 
 	go func() {
-		_ = driver.server.Serve(listener)
+		err := driver.server.Serve(listener)
+		if err != nil && err != http.ErrServerClosed {
+			panic(fmt.Errorf("failed to start internal http server: %w", err))
+		}
 	}()
 
 	entrypoint, err := os.CreateTemp("", "geckodriver")
