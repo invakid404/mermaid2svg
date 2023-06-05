@@ -7,13 +7,19 @@ import (
 )
 
 func (api *API) registerRoutes() {
-	api.router.Use(cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
-	}).Handler)
+	api.router.Use(
+		middleware.RequestID,
+		api.RequestLogger,
+		cors.New(
+			cors.Options{
+				AllowedOrigins:   []string{"https://*", "http://*"},
+				AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+				AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+				ExposedHeaders:   []string{"Link"},
+				AllowCredentials: false,
+			},
+		).Handler,
+	)
 
 	api.router.Route("/api", func(apiRouter chi.Router) {
 		apiRouter.Use(middleware.AllowContentEncoding("application/json"))
