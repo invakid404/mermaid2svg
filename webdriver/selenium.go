@@ -7,6 +7,7 @@ import (
 	"github.com/invakid404/mermaid2svg/util/httputil"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/rs/zerolog"
 
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/firefox"
@@ -46,7 +47,12 @@ var (
 	})
 )
 
+type Options struct {
+	Log zerolog.Logger
+}
+
 type Driver struct {
+	log               zerolog.Logger
 	service           *selenium.Service
 	serviceEntrypoint string
 	webDriver         selenium.WebDriver
@@ -56,7 +62,7 @@ type Driver struct {
 	init              atomic.Bool
 }
 
-func New() (*Driver, error) {
+func New(options Options) (*Driver, error) {
 	router := chi.NewRouter()
 	router.Get("/", func(res http.ResponseWriter, req *http.Request) {
 		_, err := res.Write(mermaidHTML)
@@ -71,6 +77,7 @@ func New() (*Driver, error) {
 	}
 
 	return &Driver{
+		log:         options.Log,
 		service:     nil,
 		server:      server,
 		renderTasks: make(chan renderTask, 16),
@@ -133,6 +140,21 @@ func (driver *Driver) Start() error {
 
 	go driver.renderThread()
 
+	// Pre-warm the browser by fetching the mermaid script ahead of time
+	go func() {
+		if err := driver.fetchRenderPage(); err != nil {
+			driver.log.Error().Err(err).Msg("Failed to pre-warm the browser")
+		}
+	}()
+
+	return nil
+}
+
+func (driver *Driver) fetchRenderPage() error {
+	if err := driver.webDriver.Get(fmt.Sprintf("http://localhost:%d/", driver.serverPort)); err != nil {
+		return fmt.Errorf("failed to get internal page: %w", err)
+	}
+
 	return nil
 }
 
@@ -154,8 +176,8 @@ func (driver *Driver) renderOne(task renderTask) {
 		close(task.err)
 	}()
 
-	if err := driver.webDriver.Get(fmt.Sprintf("http://localhost:%d/", driver.serverPort)); err != nil {
-		task.err <- fmt.Errorf("failed to get internal page: %w", err)
+	if err := driver.fetchRenderPage(); err != nil {
+		task.err <- err
 		return
 	}
 
