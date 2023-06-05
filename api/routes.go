@@ -1,4 +1,4 @@
-package routes
+package api
 
 import (
 	"github.com/go-chi/chi/v5"
@@ -6,8 +6,8 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func Register(router chi.Router) {
-	router.Use(cors.New(cors.Options{
+func (api *API) registerRoutes() {
+	api.router.Use(cors.New(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
@@ -15,9 +15,10 @@ func Register(router chi.Router) {
 		AllowCredentials: false,
 	}).Handler)
 
-	router.Route("/api", func(apiRouter chi.Router) {
+	api.router.Route("/api", func(apiRouter chi.Router) {
 		apiRouter.Use(middleware.AllowContentEncoding("application/json"))
 
-		registerRender(apiRouter)
+		render := &renderAPI{api}
+		render.Register(apiRouter)
 	})
 }

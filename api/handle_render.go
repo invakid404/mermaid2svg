@@ -1,20 +1,18 @@
-package routes
+package api
 
 import (
 	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
-	"github.com/invakid404/mermaid2svg/api/utils"
-	"github.com/invakid404/mermaid2svg/webdriver"
 	"net/http"
 )
 
-type renderImpl struct{}
+type renderAPI struct {
+	api *API
+}
 
-func registerRender(router chi.Router) {
-	impl := &renderImpl{}
-
-	router.Post("/v1/render", impl.render)
+func (r *renderAPI) Register(router chi.Router) {
+	router.Post("/v1/render", r.render)
 }
 
 type RenderRequest struct {
@@ -29,17 +27,17 @@ func (body *RenderRequest) Bind(*http.Request) error {
 	return nil
 }
 
-func (impl *renderImpl) render(res http.ResponseWriter, req *http.Request) {
+func (r *renderAPI) render(res http.ResponseWriter, req *http.Request) {
 	body := &RenderRequest{}
 	if err := render.Bind(req, body); err != nil {
-		_ = render.Render(res, req, utils.ErrInvalidRequest(err))
+		_ = render.Render(res, req, ErrInvalidRequest(err))
 		return
 	}
 
-	app := req.Context().Value("driver").(*webdriver.Driver)
-	svg, err := app.Render(body.Content)
+	driver := r.api.driver
+	svg, err := driver.Render(body.Content)
 	if err != nil {
-		_ = render.Render(res, req, utils.ErrInternalServerError(err))
+		_ = render.Render(res, req, ErrInternalServerError(err))
 		return
 	}
 

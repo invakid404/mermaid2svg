@@ -1,10 +1,8 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/invakid404/mermaid2svg/api/routes"
 	"github.com/invakid404/mermaid2svg/webdriver"
 	"net/http"
 )
@@ -25,15 +23,7 @@ func New(options Options) *API {
 		router: chi.NewRouter(),
 	}
 
-	api.router.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			ctx := context.WithValue(req.Context(), "driver", api.driver)
-
-			next.ServeHTTP(res, req.WithContext(ctx))
-		})
-	})
-
-	routes.Register(api.router)
+	api.registerRoutes()
 
 	api.server = &http.Server{
 		Addr:    ":8080",
