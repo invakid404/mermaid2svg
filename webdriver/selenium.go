@@ -43,7 +43,7 @@ var (
 	renderDurationSeconds = promauto.NewHistogram(prometheus.HistogramOpts{
 		Name:    "webdriver_render_duration_seconds",
 		Help:    "The processing duration of render tasks",
-		Buckets: []float64{0.1, 1, 5, 10, 30, 60},
+		Buckets: []float64{0.5, 1, 5, 10, 20, 30},
 	})
 )
 
