@@ -48,11 +48,13 @@ var (
 )
 
 type Options struct {
-	Log zerolog.Logger
+	Log      zerolog.Logger
+	Headless bool
 }
 
 type Driver struct {
 	log               zerolog.Logger
+	headless          bool
 	service           *selenium.Service
 	serviceEntrypoint string
 	webDriver         selenium.WebDriver
@@ -78,6 +80,7 @@ func New(options Options) (*Driver, error) {
 
 	return &Driver{
 		log:         options.Log,
+		headless:    options.Headless,
 		service:     nil,
 		server:      server,
 		renderTasks: make(chan renderTask, 16),
@@ -128,8 +131,14 @@ func (driver *Driver) Start() error {
 	driver.service = service
 
 	capabilities := selenium.Capabilities{"browserName": "firefox"}
+
+	firefoxArgs := make([]string, 0, 1)
+	if driver.headless {
+		firefoxArgs = append(firefoxArgs, "--headless")
+	}
+
 	capabilities.AddFirefox(firefox.Capabilities{
-		Args: []string{"--headless"},
+		Args: firefoxArgs,
 	})
 
 	webDriver, err := selenium.NewRemote(capabilities, fmt.Sprintf("http://localhost:%d", geckodriverPort))

@@ -25,7 +25,8 @@ func run() error {
 	}
 
 	driver, err := webdriver.New(webdriver.Options{
-		Log: log.With().Str("component", "webdriver").Logger(),
+		Log:      log.With().Str("component", "webdriver").Logger(),
+		Headless: !dev,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to init webdriver: %w", err)
