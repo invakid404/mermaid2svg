@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/invakid404/mermaid2svg/util/httputil"
 	"github.com/invakid404/mermaid2svg/webdriver"
 	"net/http"
 )
@@ -45,5 +46,9 @@ func (api *API) Start() error {
 }
 
 func (api *API) Stop() error {
-	return api.server.Close()
+	if err := httputil.ShutdownGracefully(api.server); err != nil {
+		return fmt.Errorf("failed to shutdown api server: %w", err)
+	}
+
+	return nil
 }

@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/invakid404/mermaid2svg/util/httputil"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/firefox"
 	"log"
@@ -214,7 +215,7 @@ func (driver *Driver) Stop() error {
 	}
 
 	if driver.server != nil {
-		if err := driver.server.Close(); err != nil {
+		if err := httputil.ShutdownGracefully(driver.server); err != nil {
 			return fmt.Errorf("failed to close http server: %w", err)
 		}
 	}
