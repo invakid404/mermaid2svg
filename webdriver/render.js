@@ -6,10 +6,25 @@ window.mermaid.initialize(options);
   document.documentElement.innerHTML = svg;
 
   const container = document.querySelector("#container");
-  const bbox = container.getBBox();
+
+  container.removeAttribute("style");
+
+  const bbox = container.getBBox({
+    fill: true,
+    stroke: true,
+    markers: true,
+    clipped: true,
+  });
+  const rect = container.getBoundingClientRect();
+
   container.setAttribute(
     "viewBox",
-    [bbox.x, bbox.y, bbox.width, bbox.height].join(" ")
+    [
+      Math.floor(bbox.x) - 5,
+      Math.floor(bbox.y) - 5,
+      Math.ceil(Math.min(bbox.width, rect.width)) + 10,
+      Math.ceil(bbox.height) + 10,
+    ].join(" ")
   );
 
   callback(container.outerHTML);
