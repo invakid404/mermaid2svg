@@ -21,6 +21,8 @@ func (api *API) registerRoutes() {
 		).Handler,
 	)
 
+	api.registerMetrics()
+
 	api.router.Route("/api", func(apiRouter chi.Router) {
 		apiRouter.Use(middleware.AllowContentEncoding("application/json"))
 
