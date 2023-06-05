@@ -133,9 +133,8 @@ func (driver *Driver) renderOne(task renderTask) {
 	result, err := driver.webDriver.ExecuteScriptAsync(
 		// language=javascript
 		`
-			const [source, callback] = arguments;
-
-			mermaid.initialize({});
+			const [source, options, callback] = arguments;
+			mermaid.initialize(options);
 
 			(async () => {
 			  const { svg } = await mermaid.render("container", source);
@@ -151,7 +150,7 @@ func (driver *Driver) renderOne(task renderTask) {
 			  callback(container.outerHTML);
 			})();
 		`,
-		[]any{task.input},
+		[]any{task.input, task.options},
 	)
 
 	if err != nil {
@@ -163,26 +162,28 @@ func (driver *Driver) renderOne(task renderTask) {
 }
 
 type renderTask struct {
-	input  string
-	output chan<- string
-	err    chan<- error
+	input   string
+	options map[string]any
+	output  chan<- string
+	err     chan<- error
 }
 
-func (driver *Driver) enqueueRender(input string) (<-chan string, <-chan error) {
+func (driver *Driver) enqueueRender(input string, options map[string]any) (<-chan string, <-chan error) {
 	outputChan := make(chan string, 1)
 	errChan := make(chan error, 1)
 
 	driver.renderTasks <- renderTask{
-		input:  input,
-		output: outputChan,
-		err:    errChan,
+		input:   input,
+		options: options,
+		output:  outputChan,
+		err:     errChan,
 	}
 
 	return outputChan, errChan
 }
 
-func (driver *Driver) Render(input string) (string, error) {
-	outputChan, errChan := driver.enqueueRender(input)
+func (driver *Driver) Render(input string, options map[string]any) (string, error) {
+	outputChan, errChan := driver.enqueueRender(input, options)
 
 	select {
 	case result := <-outputChan:
