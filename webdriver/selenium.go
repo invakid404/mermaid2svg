@@ -1,6 +1,7 @@
 package webdriver
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"github.com/go-chi/chi/v5"
@@ -235,6 +236,14 @@ func (driver *Driver) Render(input string, options map[string]any) (string, erro
 	case err := <-errChan:
 		return "", err
 	}
+}
+
+func (driver *Driver) Ping(context.Context) error {
+	_, err := driver.webDriver.ExecuteScript(`
+		return true;
+    `, []any{})
+
+	return err
 }
 
 func (driver *Driver) Stop() error {

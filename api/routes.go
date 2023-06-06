@@ -21,6 +21,7 @@ func (api *API) registerRoutes() {
 		).Handler,
 	)
 
+	api.registerHealth()
 	api.registerMetrics()
 
 	api.router.Route("/api", func(apiRouter chi.Router) {

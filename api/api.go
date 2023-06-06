@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/alexliesenfeld/health"
 	"github.com/go-chi/chi/v5"
 	"github.com/invakid404/mermaid2svg/util/httputil"
 	"github.com/invakid404/mermaid2svg/webdriver"
@@ -10,22 +11,25 @@ import (
 )
 
 type Options struct {
-	Driver *webdriver.Driver
-	Log    zerolog.Logger
+	Driver  *webdriver.Driver
+	Log     zerolog.Logger
+	Checker health.Checker
 }
 
 type API struct {
-	server *http.Server
-	router chi.Router
-	driver *webdriver.Driver
-	log    zerolog.Logger
+	server  *http.Server
+	router  chi.Router
+	driver  *webdriver.Driver
+	log     zerolog.Logger
+	checker health.Checker
 }
 
 func New(options Options) *API {
 	api := &API{
-		driver: options.Driver,
-		log:    options.Log,
-		router: chi.NewRouter(),
+		driver:  options.Driver,
+		log:     options.Log,
+		router:  chi.NewRouter(),
+		checker: options.Checker,
 	}
 
 	api.registerRoutes()

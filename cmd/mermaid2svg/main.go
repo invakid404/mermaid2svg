@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"github.com/alexliesenfeld/health"
 	"github.com/invakid404/mermaid2svg/api"
 	logconfig "github.com/invakid404/mermaid2svg/log"
 	"github.com/invakid404/mermaid2svg/webdriver"
@@ -45,6 +46,9 @@ func run() error {
 	app := api.New(api.Options{
 		Driver: driver,
 		Log:    log.With().Str("component", "api").Logger(),
+		Checker: health.NewChecker(
+			webdriver.Checker(driver),
+		),
 	})
 
 	defer func(app *api.API) {
