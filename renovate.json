@@ -1,3 +1,6 @@
 {
-	"extends": ["github>invakid404/renovate-config"]
+  "extends": ["github>invakid404/renovate-config"],
+  "docker": {
+    "enabled": true
+  }
 }
