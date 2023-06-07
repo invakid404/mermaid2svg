@@ -10,7 +10,7 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
-imagePullSecrets: [ ]
+imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
@@ -18,22 +18,22 @@ serviceAccount:
   # Specifies whether a service account should be created
   create: true
   # Annotations to add to the service account
-  annotations: { }
+  annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: { }
+podAnnotations: {}
 
-podSecurityContext: { }
+podSecurityContext: {}
 # fsGroup: 2000
 
-securityContext: { }
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
+securityContext: {}
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
 # runAsUser: 1000
 
 service:
@@ -43,26 +43,73 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations: { }
-    # kubernetes.io/ingress.class: nginx
+  annotations: {}
+  # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
   hosts:
     - chart-example.local
-  tls: [ ]
+  tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
 
-resources: { }
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+
+  # Fall back to the prometheus default unless specified
+  # interval: 10s
+
+  scrapeTimeout: 10s
+
+  # Relabelings dynamically rewrite the label set of a target before it gets scraped.
+  # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.RelabelConfig
+  relabelings: []
+  # - sourceLabels: [__address__]
+  #   targetLabel: __param_target
+  # - sourceLabels: [__param_target]
+  #   targetLabel: instance
+
+  # Label for selecting service monitors as set in Prometheus CRD.
+  # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.PrometheusSpec
+  selector:
+    prometheus: kube-prometheus
+
+  # Retain the job and instance labels of the metrics retrieved by the snmp-exporter
+  # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.Endpoint
+  honorLabels: true
+
+  params: []
+  # Human readable URL that will appear in Prometheus / AlertManager
+  # - name: localhost
+  # The target that snmp will scrape
+  #   target: 127.0.0.1
+  # Module used for scraping. Overrides value set in serviceMonitor.module
+  #   module:
+  #     - if_mib
+  # Map of labels for ServiceMonitor. Overrides value set in serviceMonitor.selector
+  #   labels: {}
+  # release: kube-prometheus-stack
+  # Scraping interval. Overrides value set in serviceMonitor.interval
+  #   interval: 30s
+  # Scrape timeout. Overrides value set in serviceMonitor.scrapeTimeout
+  #   scrapeTimeout: 30s
+  # Relabelings. Overrides value set in serviceMonitor.relabelings
+  #   relabelings: []
+  # Map of metric labels and values to add. Overrides value set in serviceMonitor.additionalMetricsRelabels
+  #   additionalMetricsRelabels: {}
+
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
 #   memory: 128Mi
 
 autoscaling:
@@ -72,8 +119,8 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-nodeSelector: { }
+nodeSelector: {}
 
-tolerations: [ ]
+tolerations: []
 
-affinity: { }
+affinity: {}
