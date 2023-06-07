@@ -16,7 +16,7 @@ COPY . .
 
 RUN go build ./cmd/mermaid2svg
 
-FROM selenium/standalone-firefox:112.0
+FROM selenium/standalone-firefox:114.0
 
 EXPOSE 8080
 WORKDIR /app
