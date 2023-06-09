@@ -9,7 +9,6 @@ import (
 func (api *API) registerRoutes() {
 	api.router.Use(
 		middleware.RequestID,
-		api.RequestLogger,
 		cors.New(
 			cors.Options{
 				AllowedOrigins:   []string{"https://*", "http://*"},
@@ -25,7 +24,10 @@ func (api *API) registerRoutes() {
 	api.registerMetrics()
 
 	api.router.Route("/api", func(apiRouter chi.Router) {
-		apiRouter.Use(middleware.AllowContentEncoding("application/json"))
+		apiRouter.Use(
+			api.RequestLogger,
+			middleware.AllowContentEncoding("application/json"),
+		)
 
 		render := &renderAPI{api}
 		render.Register(apiRouter)
