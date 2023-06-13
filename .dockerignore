@@ -1,0 +1,7 @@
+Dockerfile
+.gitignore
+LICENSE
+renovate.json
+.git/
+.github/
+.idea/
