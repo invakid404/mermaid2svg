@@ -33,6 +33,13 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: LOG_LEVEL
+              value: "{{ .Values.mermaid2svg.logLevel }}"
+            - name: MOZ_HEADLESS_WIDTH
+              value: "{{ .Values.mermaid2svg.browser.width }}"
+            - name: MOZ_HEADLESS_HEIGHT
+              value: "{{ .Values.mermaid2svg.browser.height }}"
           ports:
             - name: http
               containerPort: 8080
