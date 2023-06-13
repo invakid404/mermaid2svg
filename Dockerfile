@@ -16,11 +16,22 @@ COPY . .
 
 RUN go build ./cmd/mermaid2svg
 
+FROM ubuntu as fonts
+
+RUN apt update && \
+    apt install -y software-properties-common && \
+    add-apt-repository multiverse && \
+    apt update && \
+    yes yes | DEBIAN_FRONTEND=dialog apt install -y ttf-mscorefonts-installer
+
 FROM selenium/standalone-firefox:114.0
 
 EXPOSE 8080
 WORKDIR /app
 
 COPY --from=build /app/mermaid2svg .
+COPY --from=fonts /usr/share/fonts/. /usr/share/fonts/
+
+RUN sudo fc-cache -f
 
 ENTRYPOINT ["/app/mermaid2svg"]
