@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/go-chi/render"
+	"github.com/rs/zerolog/hlog"
 	"net/http"
 )
 
@@ -15,6 +16,9 @@ type ErrResponse struct {
 }
 
 func (err *ErrResponse) Render(_ http.ResponseWriter, req *http.Request) error {
+	logger := hlog.FromRequest(req)
+	logger.Err(err.Err).Msg("An error occurred while processing the request")
+
 	render.Status(req, err.HTTPStatusCode)
 
 	return nil
