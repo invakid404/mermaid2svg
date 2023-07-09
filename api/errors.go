@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/go-chi/render"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/hlog"
 	"net/http"
 )
@@ -26,18 +27,18 @@ func (err *ErrResponse) Render(_ http.ResponseWriter, req *http.Request) error {
 
 func ErrInvalidRequest(err error) render.Renderer {
 	return &ErrResponse{
-		Err:            err,
+		Err:            errors.Wrap(err, "Invalid Request"),
 		HTTPStatusCode: 400,
-		StatusText:     "Invalid request",
+		StatusText:     "Invalid Request",
 		ErrorText:      err.Error(),
 	}
 }
 
 func ErrInternalServerError(err error) render.Renderer {
 	return &ErrResponse{
-		Err:            err,
+		Err:            errors.Wrap(err, "Internal Server Error"),
 		HTTPStatusCode: 500,
-		StatusText:     "Internal server error",
+		StatusText:     "Internal Server Error",
 		ErrorText:      err.Error(),
 	}
 }
