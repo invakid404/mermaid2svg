@@ -17,7 +17,7 @@ func SetupLogger(logLevel string, pretty bool) error {
 	if err != nil {
 		return fmt.Errorf("failed to parse log level '%s': %w", logLevel, err)
 	}
-	log.Logger = log.Level(parsedLogLevel)
+	log.Logger = log.Level(parsedLogLevel).With().Stack().Logger()
 
 	if pretty {
 		log.Logger = log.
