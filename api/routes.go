@@ -25,7 +25,7 @@ func (api *API) registerRoutes() {
 
 	api.router.Route("/api", func(apiRouter chi.Router) {
 		apiRouter.Use(
-			api.RequestLogger,
+			api.NewRequestLogger(),
 			middleware.AllowContentEncoding("application/json"),
 		)
 

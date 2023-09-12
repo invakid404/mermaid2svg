@@ -1,18 +1,19 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"github.com/alexliesenfeld/health"
 	"github.com/go-chi/chi/v5"
 	"github.com/invakid404/mermaid2svg/util/httputil"
 	"github.com/invakid404/mermaid2svg/webdriver"
-	"github.com/rs/zerolog"
+	"log/slog"
 	"net/http"
 )
 
 type Options struct {
 	Driver  *webdriver.Driver
-	Log     zerolog.Logger
+	Log     *slog.Logger
 	Checker health.Checker
 }
 
@@ -20,7 +21,7 @@ type API struct {
 	server  *http.Server
 	router  chi.Router
 	driver  *webdriver.Driver
-	log     zerolog.Logger
+	log     *slog.Logger
 	checker health.Checker
 }
 
@@ -50,7 +51,7 @@ func (api *API) Start() error {
 		}
 	}()
 
-	api.log.Info().Msgf("API listening on %s", api.server.Addr)
+	api.log.Info(fmt.Sprintf("api listening on %s", api.server.Addr))
 
 	return nil
 }

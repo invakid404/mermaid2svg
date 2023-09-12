@@ -7,7 +7,7 @@ import (
 	"github.com/invakid404/mermaid2svg/api"
 	logconfig "github.com/invakid404/mermaid2svg/log"
 	"github.com/invakid404/mermaid2svg/webdriver"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,16 +17,12 @@ func run() error {
 	logLevel := os.Getenv("LOG_LEVEL")
 	dev := os.Getenv("DEV") == "true"
 
-	if logLevel == "" {
-		logLevel = "info"
-	}
-
 	if err := logconfig.SetupLogger(logLevel, dev); err != nil {
 		return fmt.Errorf("failed to set up logging: %w", err)
 	}
 
 	driver, err := webdriver.New(webdriver.Options{
-		Log:      log.With().Str("component", "webdriver").Logger(),
+		Log:      slog.With("component", "webdriver"),
 		Headless: !dev,
 	})
 	if err != nil {
@@ -35,7 +31,7 @@ func run() error {
 
 	defer func(driver *webdriver.Driver) {
 		if err := driver.Stop(); err != nil {
-			log.Error().Err(err).Msg("failed to stop web driver")
+			slog.Error("failed to stop web driver", "error", err)
 		}
 	}(driver)
 
@@ -45,7 +41,7 @@ func run() error {
 
 	app := api.New(api.Options{
 		Driver: driver,
-		Log:    log.With().Str("component", "api").Logger(),
+		Log:    slog.With("component", "api"),
 		Checker: health.NewChecker(
 			webdriver.Checker(driver),
 		),
@@ -54,7 +50,7 @@ func run() error {
 	defer func(app *api.API) {
 		err := app.Stop()
 		if err != nil {
-			log.Error().Err(err).Msg("failed to stop api")
+			slog.Error("failed to stop api", "error", err)
 		}
 	}(app)
 
@@ -71,7 +67,7 @@ func run() error {
 
 func main() {
 	if err := run(); err != nil {
-		log.Error().Err(err).Msg("")
+		slog.Error("", "error", err)
 		os.Exit(1)
 	}
 }

@@ -2,30 +2,30 @@ package log
 
 import (
 	"fmt"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"github.com/rs/zerolog/pkgerrors"
+	"log/slog"
 	"os"
 )
 
 func SetupLogger(logLevel string, pretty bool) error {
-	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	zerolog.DefaultContextLogger = &log.Logger
-
-	parsedLogLevel, err := zerolog.ParseLevel(logLevel)
-	if err != nil {
-		return fmt.Errorf("failed to parse log level '%s': %w", logLevel, err)
+	parsedLogLevel := slog.LevelInfo
+	if logLevel != "" {
+		if err := parsedLogLevel.UnmarshalText([]byte(logLevel)); err != nil {
+			return fmt.Errorf("failed to parse log level: %w", err)
+		}
 	}
-	log.Logger = log.Level(parsedLogLevel).With().Stack().Logger()
 
+	handlerOptions := &slog.HandlerOptions{
+		Level: parsedLogLevel,
+	}
+
+	var logger *slog.Logger
 	if pretty {
-		log.Logger = log.
-			Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: zerolog.TimeFormatUnix}).
-			With().
-			Caller().
-			Logger()
+		logger = slog.New(slog.NewTextHandler(os.Stdout, handlerOptions))
+	} else {
+		logger = slog.New(slog.NewJSONHandler(os.Stdout, handlerOptions))
 	}
+
+	slog.SetDefault(logger)
 
 	return nil
 }

@@ -3,12 +3,13 @@ package webdriver
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/invakid404/mermaid2svg/util/httputil"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/rs/zerolog"
+	"log/slog"
 
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/firefox"
@@ -49,12 +50,12 @@ var (
 )
 
 type Options struct {
-	Log      zerolog.Logger
+	Log      *slog.Logger
 	Headless bool
 }
 
 type Driver struct {
-	log               zerolog.Logger
+	log               *slog.Logger
 	headless          bool
 	service           *selenium.Service
 	serviceEntrypoint string
@@ -153,7 +154,7 @@ func (driver *Driver) Start() error {
 	// Pre-warm the browser by fetching the mermaid script ahead of time
 	go func() {
 		if err := driver.fetchRenderPage(); err != nil {
-			driver.log.Error().Err(err).Msg("Failed to pre-warm the browser")
+			driver.log.Error("failed to pre-warm the browser", "error", err)
 		}
 	}()
 
