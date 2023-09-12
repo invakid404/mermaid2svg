@@ -46,7 +46,7 @@ func New(options Options) *API {
 func (api *API) Start() error {
 	go func() {
 		err := api.server.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(fmt.Errorf("failed to start api: %w", err))
 		}
 	}()

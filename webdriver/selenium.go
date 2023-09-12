@@ -103,7 +103,7 @@ func (driver *Driver) Start() error {
 
 	go func() {
 		err := driver.server.Serve(listener)
-		if err != nil && err != http.ErrServerClosed {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(fmt.Errorf("failed to start internal http server: %w", err))
 		}
 	}()
