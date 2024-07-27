@@ -33,6 +33,6 @@ WORKDIR /app
 COPY --from=build /app/mermaid2svg .
 COPY --from=fonts /usr/share/fonts/. /usr/share/fonts/
 
-RUN sudo fc-cache -f
+RUN fc-cache -f
 
 ENTRYPOINT ["/app/mermaid2svg"]
