@@ -1,11 +1,12 @@
-FROM golang:1.21.1 as build
+FROM --platform=$BUILDPLATFORM golang:1.21.1 AS build
 
 WORKDIR /app
 
+ARG TARGETOS
+ARG TARGETARCH
+
 ENV GO111MODULE=on \
-    CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64
+    CGO_ENABLED=0
 
 COPY go.mod .
 COPY go.sum .
@@ -14,9 +15,9 @@ RUN go mod download
 
 COPY . .
 
-RUN go build ./cmd/mermaid2svg
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build ./cmd/mermaid2svg
 
-FROM ubuntu as fonts
+FROM --platform=$BUILDPLATFORM ubuntu AS fonts
 
 RUN apt update && \
     apt install -y software-properties-common && \
