@@ -25,7 +25,7 @@ RUN apt update && \
     apt update && \
     yes yes | DEBIAN_FRONTEND=dialog apt install -y ttf-mscorefonts-installer
 
-FROM selenium/standalone-firefox:129.0
+FROM selenium/standalone-firefox:130.0
 
 EXPOSE 8080
 WORKDIR /app
