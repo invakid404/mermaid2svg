@@ -1,10 +1,10 @@
 module github.com/invakid404/mermaid2svg
 
-go 1.20
+go 1.22
 
 require (
 	github.com/alexliesenfeld/health v0.8.0
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/render v1.0.3
 	github.com/pkg/errors v0.9.1
