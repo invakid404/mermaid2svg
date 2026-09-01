@@ -1,6 +1,6 @@
 module github.com/invakid404/mermaid2svg
 
-go 1.20
+go 1.27.1
 
 require (
 	github.com/alexliesenfeld/health v0.8.0
