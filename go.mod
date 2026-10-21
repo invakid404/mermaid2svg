@@ -1,6 +1,6 @@
 module github.com/invakid404/mermaid2svg
 
-go 1.20
+go 1.24
 
 require (
 	github.com/alexliesenfeld/health v0.8.0
@@ -18,7 +18,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
